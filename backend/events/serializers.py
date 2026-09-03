@@ -1,5 +1,6 @@
+from django.conf import settings
 from rest_framework import serializers
-from .models import Category, Event, User
+from .models import Category, Event, User, Booking
 
 class AdminUserSerializer(serializers.ModelSerializer):
     class Meta:
@@ -45,6 +46,27 @@ class EventSerializer(serializers.ModelSerializer):
         queryset=Category.objects.all(),
     )
     time = serializers.TimeField(format='%H:%M')
+    image = serializers.SerializerMethodField()
+
+    def get_image(self, obj):
+        if not obj.image:
+            return ''
+
+        image_name = str(obj.image.name)
+
+        # print("IMAGE:", repr(image_name))
+
+        # External URL
+        if image_name.startswith('http://') or image_name.startswith('https://'):
+            return image_name
+
+        # Local uploaded image
+        request = self.context.get('request')
+
+        if request:
+            return request.build_absolute_uri(obj.image.url)
+
+        return f"{settings.MEDIA_URL}{image_name}"
 
     class Meta:
         model = Event
@@ -63,3 +85,31 @@ class EventSerializer(serializers.ModelSerializer):
             'attendees',
             'featured',
         ]
+
+
+class BookingSerializer(serializers.ModelSerializer):
+    user = UserSerializer(read_only=True)
+    event = serializers.PrimaryKeyRelatedField(
+        queryset=Event.objects.all()
+    )
+
+    class Meta:
+        model = Booking
+        fields = ['id', 'user', 'event', 'date']
+        read_only_fields = ['id', 'user', 'date']
+
+    # def create(self, validated_data):
+    #     user = validated_data['user']['username']
+    #     if (Booking.objects.filter(user=user).exists()):
+    #         return serializers.ValidationError("object already exist")
+    #     return super().create(validated_data)
+
+
+class ViewBookingSerializer(serializers.ModelSerializer):
+    user = UserSerializer(read_only=True)
+    event = EventSerializer(read_only=True)
+
+    class Meta:
+        model = Booking
+        fields = ['id', 'user', 'event', 'date']
+        read_only_fields = ['id', 'user', 'date']

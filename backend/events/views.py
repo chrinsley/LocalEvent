@@ -5,8 +5,8 @@ from rest_framework import viewsets
 from rest_framework.decorators import action
 from rest_framework.response import Response
 from rest_framework import generics
-from .models import Category, Event, User
-from .serializers import CategorySerializer, EventSerializer, UserSerializer
+from .models import Category, Event, User, Booking
+from .serializers import CategorySerializer, EventSerializer, UserSerializer, BookingSerializer, ViewBookingSerializer
 from rest_framework.permissions import AllowAny
 from rest_framework.decorators import api_view, permission_classes
 from rest_framework.permissions import IsAuthenticated
@@ -66,3 +66,23 @@ def User(request):
     user = request.user
     serializer = UserSerializer(user)
     return Response(serializer.data)
+
+
+class BookingViewset(viewsets.ModelViewSet):
+    queryset = Booking.objects.all()
+    serializer_class = BookingSerializer
+    permission_classes = [IsAuthenticated]
+
+    def get_queryset(self):
+        return Booking.objects.filter(user=self.request.user)
+
+    def get_serializer_class(self):
+        if self.action in ['create', 'retrieve']:
+            return BookingSerializer
+            
+        # Fallback to a lighter serializer for lists or other actions
+        return ViewBookingSerializer
+    
+
+    def perform_create(self, serializer):
+        serializer.save(user=self.request.user)

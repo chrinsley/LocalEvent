@@ -1,15 +1,18 @@
 'use client'
 
 import { GoogleLogin } from '@react-oauth/google'
+import { useRouter } from 'next/navigation'
 
 export default function GoogleButton() {
+  const router = useRouter()
 
   const handleGoogleSuccess = async (
     credentialResponse
   ) => {
 
     console.log(
-      credentialResponse.credential
+      credentialResponse.credential,
+      credentialResponse.clientId
     )
 
     const response = await fetch('/api/auth/google', {
@@ -31,7 +34,7 @@ export default function GoogleButton() {
 
     console.log('Google login successful')
 
-    window.location.href = '/event'
+    router.push('/event')
   }
 
   return (

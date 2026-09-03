@@ -78,7 +78,7 @@
 
   border-radius: 999px;
 
-  background: #7c3aed;
+  background: #06b6d4;
 
   color: white;
 
@@ -128,9 +128,9 @@
 
   border-radius: 999px;
 
-  background: rgba(124,58,237,0.15);
+  background: rgba(103,232,249,0.12);
 
-  color: #a78bfa;
+  color: #67e8f9;
 
   font-size: 13px;
 
@@ -256,16 +256,16 @@
 }
 
 .event-btn-primary {
-  background: #7c3aed;
+  background: #06b6d4;
 
   color: white;
 
   box-shadow:
-    0 8px 25px rgba(124,58,237,0.3);
+    0 8px 25px rgba(103,232,249,0.25);
 }
 
 .event-btn-primary:hover {
-  background: #8b5cf6;
+  background: #22d3ee;
 
   transform: translateY(-2px);
 }
@@ -390,7 +390,7 @@
 
   border: 3px solid rgba(255,255,255,0.1);
 
-  border-top-color: #7c3aed;
+  border-top-color: #67e8f9;
 
   border-radius: 50%;
 
@@ -451,7 +451,7 @@
 
   border-radius: 999px;
 
-  background: #7c3aed;
+  background: #06b6d4;
 
   color: white;
 

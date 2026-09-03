@@ -34,7 +34,7 @@ class Event(models.Model):
     time = models.TimeField()
     venue = models.CharField(max_length=200)
     city = models.CharField(max_length=100)
-    image = models.URLField()
+    image = models.ImageField(upload_to='upload_files/', blank=True, null=True)
     source = models.CharField(max_length=20, choices=SOURCE_CHOICES)
     price = models.CharField(max_length=50)
     attendees = models.PositiveIntegerField(default=0)
@@ -45,3 +45,13 @@ class Event(models.Model):
 
     def __str__(self):
         return self.title
+
+class Booking(models.Model):
+    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='users')
+    event = models.ForeignKey(
+        Event,
+        on_delete=models.CASCADE,
+        related_name='bookings'
+    )
+
+    date = models.DateField(auto_now=True)

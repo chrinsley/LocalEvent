@@ -21,7 +21,7 @@ function parseIncomingMessage(payload: string) {
   }
 }
 
-const chat = () => {
+const Chat = () => {
   const [message, setMessage] = useState('')
   const [messages, setMessages] = useState<ChatMessageItem[]>([
     {
@@ -42,7 +42,9 @@ const chat = () => {
   const lastSentMessageRef = useRef<string | null>(null)
 
   useEffect(() => {
-    const socket = new WebSocket('ws://127.0.0.1:8000/ws/chat/15/')
+    const socket = new WebSocket(
+      process.env.NEXT_PUBLIC_WS_URL || 'ws://127.0.0.1:8000/ws/chat/15/'
+    )
     socketRef.current = socket
 
     socket.onopen = () => {
@@ -86,12 +88,6 @@ const chat = () => {
       event.preventDefault()
       sendMessage()
     }
-  }
-
-  function disconnet(): void {
-    socketRef.current?.close(1000, 'disconnect')
-    console.log('closed')
-    
   }
 
   return (
@@ -141,12 +137,10 @@ const chat = () => {
           </button>
         </div>
       </div>
-      <button type="button" className="chat-send" onClick={disconnet}>
-            Disconnect
-          </button>
+      
     </main>
   )
 }
 
-export default chat
+export default Chat
 

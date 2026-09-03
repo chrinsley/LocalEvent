@@ -3,15 +3,19 @@
 import Link from 'next/link'
 import { FormEvent, useState } from 'react'
 import { instance } from '@/api/api'
+import { useRouter } from 'next/navigation'
 
-function page() {
+
+function SignupPage() {
   const [username, setUsername] = useState('')
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [error, setError] = useState('')
   const [success, setSuccess] = useState('')
   const [isSubmitting, setIsSubmitting] = useState(false)
+  const router = useRouter()
 
+  
   const handleSubmit = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault()
     setError('')
@@ -21,6 +25,7 @@ function page() {
     try {
       await instance.post('users/', { username, email, password })
       setSuccess('Your account is ready. You can sign in now.')
+      router.replace('/login')
       setUsername('')
       setEmail('')
       setPassword('')
@@ -60,4 +65,4 @@ function page() {
   )
 }
 
-export default page
+export default SignupPage

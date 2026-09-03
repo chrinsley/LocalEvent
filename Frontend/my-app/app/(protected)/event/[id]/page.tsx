@@ -46,6 +46,8 @@ export default function EventId() {
   const [error, setError] = useState('')
 
   const params = useParams()
+  
+ 
 
   useEffect(() => {
     const fetchEventDetail = async () => {
@@ -69,6 +71,8 @@ export default function EventId() {
       fetchEventDetail()
     }
   }, [params.id])
+
+ 
 
   if (loading) {
     return (
@@ -236,19 +240,29 @@ export default function EventId() {
           {/* ACTIONS */}
           <div className="event-actions">
 
-            <button
-              type="button"
-              className="event-btn event-btn-primary"
-            >
-              ✓ I'm going
-            </button>
+            <Link href={`/Booking/${event.id}`}>
+              <button
+                type="button"
+                className="event-btn event-btn-primary"
+              >
+                ✓ I&apos;m going
+              </button>
+            </Link>
 
-            <button
+            <Link 
+                href="https://facebook.com" 
+                target="_blank" 
+                rel="noopener noreferrer"
+              >
+                 <button
               type="button"
               className="event-btn event-btn-secondary"
+           
             >
               ↗ Share event
             </button>
+              </Link>
+           
 
           </div>
 

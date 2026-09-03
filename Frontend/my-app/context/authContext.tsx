@@ -8,6 +8,7 @@ import React, {
 
 interface AuthContextType {
     isAuthenticated: boolean;
+    isLoading: boolean;
     token: string | null;
     refreshToken: string | null;
     login: (accessToken: string, refreshToken: string) => void;
@@ -25,6 +26,7 @@ export const AuthContext = createContext<AuthContextType | undefined>(
 export const AuthProvider = ({ children }: AuthProviderProps) => {
 
     const [isAuthenticated, setIsAuthenticated] = useState(false);
+    const [isLoading, setIsLoading] = useState(true);
 
     const [token, setToken] = useState<string | null>(null);
 
@@ -43,6 +45,7 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
         } else {
             setIsAuthenticated(true);
         }
+        setIsLoading(false);
     };
 
 
@@ -76,7 +79,8 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
 
 
     useEffect(() => {
-        isAuth();
+        const timer = window.setTimeout(isAuth, 0);
+        return () => window.clearTimeout(timer);
     }, []);
 
 
@@ -84,6 +88,7 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
         <AuthContext.Provider
             value={{
                 isAuthenticated,
+                isLoading,
                 token,
                 refreshToken,
                 login,

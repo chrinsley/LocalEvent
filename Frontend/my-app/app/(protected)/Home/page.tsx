@@ -16,7 +16,6 @@ function HomePage() {
   const [selectedCategory, setSelectedCategory] = useState('all')
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState('')
-
   useEffect(() => {
     const fetchHomeData = async () => {
       try {
@@ -46,6 +45,7 @@ function HomePage() {
   return (
     <main className="home-page">
       <section className="home-hero">
+        
         <p className="home-kicker">Your city, switched on</p>
         <h1>Find something worth going out for.</h1>
         <p className="home-intro">Discover concerts, matches, festivals, and local moments happening near you.</p>
@@ -71,7 +71,7 @@ function HomePage() {
         )}
         {!loading && !error && <div className="event-grid">
           {filteredEvents.map((event) => <Link className="event-card" href={`/event/${event.id}`} key={event.id}>
-            <img src={event.image} alt="" /><div className="event-card-body"><p className="event-date">{event.date} · {event.time}</p><h3>{event.title}</h3><p>{event.venue}, {event.city}</p><strong>{event.price}</strong></div>
+            <img src={event.image} alt="" /><div className="event-card-body"><p className="event-date">{event.date} · {event.time}</p><h3>{event.title}</h3><p>{event.venue}, {event.city}</p><strong>${event.price}</strong></div>
           </Link>)}
         </div>}
       </section>
