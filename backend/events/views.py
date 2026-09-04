@@ -6,13 +6,24 @@ from rest_framework.decorators import action
 from rest_framework.response import Response
 from rest_framework import generics
 from .models import Category, Event, User, Booking
-from .serializers import CategorySerializer, EventSerializer, UserSerializer, BookingSerializer, ViewBookingSerializer
+from .serializers import CategorySerializer, EventSerializer, UserSerializer, BookingSerializer, ViewBookingSerializer, CurrentUserSerializer
 from rest_framework.permissions import AllowAny
 from rest_framework.decorators import api_view, permission_classes
 from rest_framework.permissions import IsAuthenticated
 import os
 from openai import OpenAI
 from rest_framework.response import Response
+
+from django.contrib.auth import get_user_model
+from rest_framework.views import APIView
+from rest_framework.response import Response
+from rest_framework import status
+from rest_framework_simplejwt.tokens import RefreshToken
+
+from google.oauth2 import id_token
+from google.auth.transport import requests
+
+import os
 
 
 
@@ -60,11 +71,16 @@ class UserListCreateView(generics.ListCreateAPIView):
     serializer_class = UserSerializer
     permission_classes = [AllowAny]
 
-@api_view(['GET'])
+@api_view(['GET', 'PATCH'])
 @permission_classes([IsAuthenticated])
-def User(request):
+def current_user(request):
     user = request.user
-    serializer = UserSerializer(user)
+    if request.method == 'PATCH':
+        serializer = CurrentUserSerializer(user, data=request.data, partial=True)
+        serializer.is_valid(raise_exception=True)
+        serializer.save()
+    else:
+        serializer = CurrentUserSerializer(user)
     return Response(serializer.data)
 
 
@@ -80,9 +96,93 @@ class BookingViewset(viewsets.ModelViewSet):
         if self.action in ['create', 'retrieve']:
             return BookingSerializer
             
-        # Fallback to a lighter serializer for lists or other actions
+        
         return ViewBookingSerializer
     
 
     def perform_create(self, serializer):
         serializer.save(user=self.request.user)
+
+
+
+User = get_user_model()
+
+
+class GoogleLoginView(APIView):
+    permission_classes = [AllowAny]
+    
+
+    def post(self, request):
+       
+
+        google_token = request.data.get("credential")
+
+        if not google_token:
+            return Response(
+                {"error": "Google credential is required"},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+
+        try:
+            # Verify the ID token with Google
+            idinfo = id_token.verify_oauth2_token(
+                google_token,
+                requests.Request(),
+                os.environ.get("GOOGLE_CLIENT_ID")
+            )
+
+        except ValueError:
+            return Response(
+                {"error": "Invalid Google token"},
+                status=status.HTTP_401_UNAUTHORIZED
+            )
+
+        # Information returned by Google
+        google_id = idinfo.get("sub")
+        email = idinfo.get("email")
+        name = idinfo.get("name", "")
+        picture = idinfo.get("picture")
+
+        if not email:
+            return Response(
+                {"error": "Google account has no email"},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+
+        # Find existing user
+        user = User.objects.filter(email=email).first()
+
+        # Create user if they don't exist
+        if not user:
+            username = email.split("@")[0]
+
+            # Make username unique
+            original_username = username
+            counter = 1
+
+            while User.objects.filter(username=username).exists():
+                username = f"{original_username}{counter}"
+                counter += 1
+
+            user = User.objects.create_user(
+                username=username,
+                email=email
+            )
+
+            user.set_unusable_password()
+            user.save()
+
+        # Generate JWT
+        refresh = RefreshToken.for_user(user)
+
+        return Response({
+            "access": str(refresh.access_token),
+            "refresh": str(refresh),
+            "user": {
+                "id": user.id,
+                "username": user.username,
+                "email": user.email,
+                "name": name,
+                "picture": picture,
+            }
+        })

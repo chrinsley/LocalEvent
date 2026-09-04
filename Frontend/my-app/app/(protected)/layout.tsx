@@ -36,6 +36,8 @@ export default function ProtectedLayout({
           <Link href="/event">Events</Link>
           <Link href="/Category">Categories</Link>
           <Link href="/chat">Chat</Link>
+          <Link href="/Booking">Bookings</Link>
+          <Link href="/Profile">Profile</Link>
         </nav>
         <button className="site-nav__logout" type="button" onClick={auth.logout}>
           Log out

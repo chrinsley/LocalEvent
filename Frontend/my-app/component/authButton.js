@@ -2,49 +2,43 @@
 
 import { GoogleLogin } from '@react-oauth/google'
 import { useRouter } from 'next/navigation'
+import { useContext } from 'react'
+import { AuthContext } from '../context/authContext'
+import { instance } from '../api/api'
 
 export default function GoogleButton() {
   const router = useRouter()
+  const auth = useContext(AuthContext)
 
   const handleGoogleSuccess = async (
     credentialResponse
   ) => {
 
-    console.log(
-      credentialResponse.credential,
-      credentialResponse.clientId
-    )
+    if (!credentialResponse.credential) return
 
-    const response = await fetch('/api/auth/google', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({
+    try {
+      const response = await instance.post('google/', {
         credential: credentialResponse.credential,
-      }),
-    })
+      })
 
-    const data = await response.json()
-
-    if (!response.ok) {
-      console.error(data)
-      return
+      auth?.login(response.data.access, response.data.refresh)
+      router.replace('/Home')
+    } catch (error) {
+      console.error('Google login failed', error)
     }
-
-    console.log('Google login successful')
-
-    router.push('/event')
   }
 
   return (
-    <GoogleLogin
-      onSuccess={handleGoogleSuccess}
-      size='medium'
-      shape='circle'
-      onError={() => {
-        console.log('Google login failed')
-      }}
-    />
+    <div className='google-login'>
+      <GoogleLogin
+        onSuccess={handleGoogleSuccess}
+        size='large'
+        width='339'
+        shape='pill'
+        onError={() => {
+          console.log('Google login failed')
+        }}
+      />
+    </div>
   )
 }

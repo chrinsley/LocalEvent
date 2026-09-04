@@ -28,6 +28,8 @@ type booking = {
 
 function BookingPage() {
   const [bookings, setBookings] = useState<booking[] | null>(null)
+  const [deletingId, setDeletingId] = useState<number | null>(null)
+  const [error, setError] = useState('')
 
   useEffect(() => {
     const fetchBooking = async () => {
@@ -37,7 +39,24 @@ function BookingPage() {
     }
     fetchBooking()
   }, [])
-  console.log(bookings)
+
+  const deleteBooking = async (bookingId: number) => {
+    if (!window.confirm('Delete this booking?')) return
+
+    setDeletingId(bookingId)
+    setError('')
+    try {
+      await instance.delete(`booking/${bookingId}/`)
+      setBookings((currentBookings) =>
+        currentBookings?.filter((booking) => booking.id !== bookingId) ?? []
+      )
+    } catch {
+      setError('We could not delete that booking. Please try again.')
+    } finally {
+      setDeletingId(null)
+    }
+  }
+
   return (
     <main className="booking-page">
       <div className="booking-shell">
@@ -68,6 +87,12 @@ function BookingPage() {
         {/* ALL BOOKINGS */}
 
         <div className="booking-list">
+
+          {error && <p className="booking-error" role="alert">{error}</p>}
+
+          {bookings?.length === 0 && (
+            <p className="booking-empty">You do not have any bookings yet. Explore events to reserve your next experience.</p>
+          )}
 
           {bookings?.map((booking) => (
 
@@ -157,6 +182,15 @@ function BookingPage() {
                   </div>
 
                 </div>
+
+                <button
+                  className="booking-delete"
+                  type="button"
+                  onClick={() => deleteBooking(booking.id)}
+                  disabled={deletingId === booking.id}
+                >
+                  {deletingId === booking.id ? 'Deleting...' : 'Delete booking'}
+                </button>
 
               </div>
 

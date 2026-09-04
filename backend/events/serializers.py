@@ -18,6 +18,26 @@ class AdminUserSerializer(serializers.ModelSerializer):
         user.save()
         return user
 
+
+class CurrentUserSerializer(serializers.ModelSerializer):
+    password = serializers.CharField(write_only=True, required=False, min_length=8)
+
+    class Meta:
+        model = User
+        fields = ['id', 'username', 'email', 'password']
+
+    def update(self, instance, validated_data):
+        password = validated_data.pop('password', None)
+
+        for attribute, value in validated_data.items():
+            setattr(instance, attribute, value)
+
+        if password:
+            instance.set_password(password)
+
+        instance.save()
+        return instance
+
 class UserSerializer(serializers.ModelSerializer):
     class Meta:
         model = User

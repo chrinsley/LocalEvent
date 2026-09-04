@@ -68,6 +68,15 @@
 }
 
 .booking-ticket__main { padding: 2.5rem; }
+.booking-error { margin: 0 0 1rem; color: #fecaca; }
+.booking-empty {
+  margin: 0;
+  padding: 2rem;
+  border: 1px dashed rgba(103, 232, 249, 0.3);
+  border-radius: 0.75rem;
+  color: #cbd5e1;
+  text-align: center;
+}
 
 .booking-status {
   display: flex;
@@ -102,6 +111,22 @@
 .booking-details div { padding-top: 1rem; border-top: 1px solid rgba(255, 255, 255, 0.1); }
 .booking-details span { display: block; margin-bottom: 0.4rem; color: #64748b; font-size: 0.72rem; font-weight: 700; letter-spacing: 0.1em; text-transform: uppercase; }
 .booking-details strong { color: #e2e8f0; font-size: 0.95rem; }
+
+.booking-delete {
+  margin-top: 2rem;
+  padding: 0.7rem 1rem;
+  border: 1px solid rgba(248, 113, 113, 0.4);
+  border-radius: 0.5rem;
+  background: rgba(127, 29, 29, 0.25);
+  color: #fecaca;
+  cursor: pointer;
+  font: inherit;
+  font-size: 0.82rem;
+  font-weight: 700;
+}
+
+.booking-delete:hover:not(:disabled) { background: rgba(185, 28, 28, 0.4); }
+.booking-delete:disabled { cursor: wait; opacity: 0.65; }
 
 .booking-ticket__stub {
   display: flex;
