@@ -5,6 +5,7 @@ import Link from 'next/link'
 import { useParams } from 'next/navigation'
 import React, { useEffect, useState } from 'react'
 import '../../../../css/EventDetail.css'
+import { formatPrice } from '@/utils/currency'
 type EventDetail = {
   id: number
   title: string
@@ -228,7 +229,7 @@ export default function EventId() {
                 </span>
 
                 <strong>
-                  {event.price}
+                  {formatPrice(event.price)}
                 </strong>
               </div>
 
@@ -349,7 +350,7 @@ export default function EventId() {
                   <small>Price</small>
 
                   <p>
-                    {event.price}
+                    {formatPrice(event.price)}
                   </p>
                 </div>
               </div>

@@ -3,6 +3,7 @@
 import { instance } from '@/api/api'
 import Link from 'next/link'
 import React, { useEffect, useState } from 'react'
+import { formatPrice } from '@/utils/currency'
 
 type Category = { id: number; label: string; description: string; icon: string; gradient: string }
 type Event = { id: number; title: string; category: number; date: string; time: string; venue: string; city: string; image: string; price: string }
@@ -47,7 +48,7 @@ export default function CategoryPage() {
         <section className="category-results" aria-labelledby="category-results-title">
           <div className="section-heading"><h2 id="category-results-title">{selectedCategory === 'all' ? 'All upcoming events' : categories.find((category) => category.id === selectedCategory)?.label}</h2><span className="category-results__count">{filteredEvents.length} events</span></div>
           {filteredEvents.length === 0 ? <p className="home-message">No events in this category yet.</p> : <div className="event-grid">
-            {filteredEvents.map((event) => <Link className="event-card" href={`/event/${event.id}`} key={event.id}><img src={event.image} alt={event.title} /><div className="event-card-body"><p className="event-date">{event.date} · {event.time}</p><h3>{event.title}</h3><p>{event.venue}, {event.city}</p><strong>{event.price}</strong></div></Link>)}
+            {filteredEvents.map((event) => <Link className="event-card" href={`/event/${event.id}`} key={event.id}><img src={event.image} alt={event.title} /><div className="event-card-body"><p className="event-date">{event.date} · {event.time}</p><h3>{event.title}</h3><p>{event.venue}, {event.city}</p><strong>{formatPrice(event.price)}</strong></div></Link>)}
           </div>}
         </section>
       </>}

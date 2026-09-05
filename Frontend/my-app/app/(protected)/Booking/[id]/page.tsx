@@ -4,6 +4,7 @@ import '../Booking.css'
 import { useParams, useRouter } from 'next/navigation'
 import { useState, useEffect } from 'react'
 import { instance } from '@/api/api'
+import { formatPrice } from '@/utils/currency'
 
 type EventDetail = {
   id: number
@@ -44,7 +45,7 @@ const BookingDetails = () => {
               `events/${params.id}/`
             )
     
-            setEvent(response.data)
+            setEvent({ ...response.data, price: formatPrice(response.data.price) })
           } catch (error) {
             console.error(error)
           }

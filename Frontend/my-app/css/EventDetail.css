@@ -506,13 +506,13 @@
   }
 
   .event-main {
-    padding: 24px;
+    padding: 20px;
 
     border-radius: 20px;
   }
 
   .event-title {
-    font-size: 38px;
+    font-size: clamp(2rem, 10vw, 2.5rem);
 
     letter-spacing: -1px;
   }
@@ -531,6 +531,15 @@
 
   .event-btn {
     width: 100%;
+  }
+
+  .event-about p {
+    font-size: 0.95rem;
+    line-height: 1.65;
+  }
+
+  .detail-item {
+    padding: 16px;
   }
 
 }

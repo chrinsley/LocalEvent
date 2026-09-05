@@ -3,6 +3,7 @@
 import { instance } from '@/api/api'
 import Link from 'next/link'
 import React, { useEffect, useState } from 'react'
+import { formatPrice } from '@/utils/currency'
 
 type Event = {
   id: number
@@ -171,7 +172,7 @@ function EventPage() {
                       </p>
 
                       <p className="font-bold text-lg">
-                        {event.price}
+                        {formatPrice(event.price)}
                       </p>
                     </div>
 

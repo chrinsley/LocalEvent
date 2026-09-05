@@ -21,6 +21,7 @@
 
 body {
   min-height: 100vh;
+  overflow-x: hidden;
   background:
     radial-gradient(circle at 15% 10%, rgba(99, 102, 241, 0.2), transparent 32rem),
     radial-gradient(circle at 90% 85%, rgba(236, 72, 153, 0.13), transparent 28rem),
@@ -190,9 +191,15 @@ body {
 .category-results__count { color: #67e8f9; font-size: 0.85rem; font-weight: 700; }
 
 @media (max-width: 700px) {
-  .home-hero { padding-top: 3.5rem; }
+  .home-hero { padding: 3.5rem 1rem 2.5rem; }
+  .home-hero h1 { font-size: clamp(2.35rem, 12vw, 4rem); }
+  .home-intro { font-size: 0.95rem; }
+  .home-content { padding: 2.5rem 1rem; }
   .section-heading { align-items: start; flex-direction: column; }
-  .featured-event { grid-template-columns: 1fr; }
+  .featured-event { grid-template-columns: 1fr; margin-bottom: 2rem; }
+  .featured-event img { min-height: 190px; max-height: 240px; }
+  .featured-event div { padding: 1.25rem; }
+  .featured-event h2 { font-size: 1.5rem; }
   .event-grid { grid-template-columns: 1fr; }
   .category-directory { grid-template-columns: 1fr; }
 }
@@ -200,7 +207,13 @@ body {
 @media (max-width: 480px) {
   .auth-page { padding-inline: 1rem; }
   .auth-card { padding: 1.5rem; }
-  .site-nav { flex-wrap: wrap; gap: 0.75rem 1rem; }
+  .site-nav { align-items: flex-start; flex-wrap: wrap; gap: 0.75rem 1rem; padding-inline: 1rem; }
   .site-nav__links { order: 3; width: 100%; justify-content: space-between; gap: 0.5rem; }
+  .site-nav__links a { font-size: 0.8rem; }
+  .site-nav__logout { margin-left: auto; }
   .site-footer { align-items: flex-start; flex-direction: column; }
+  .category-page { padding: 2.5rem 1rem 3rem; }
+  .category-header h1 { font-size: 2.6rem; }
+  .category-directory { margin-bottom: 2.5rem; }
+  .category-tile { min-height: 96px; padding: 1rem; }
 }

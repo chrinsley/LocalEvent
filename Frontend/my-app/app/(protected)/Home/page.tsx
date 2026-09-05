@@ -2,6 +2,7 @@
 import { instance } from '@/api/api'
 import Link from 'next/link'
 import React, { useEffect, useState } from 'react'
+import { formatPrice } from '@/utils/currency'
 
 type Category = { id: number; label: string; description: string; icon: string }
 type Event = {
@@ -66,12 +67,12 @@ function HomePage() {
         {error && <p className="home-message error">{error}</p>}
         {!loading && !error && featuredEvent && selectedCategory === 'all' && !search && (
           <Link className="featured-event" href={`/event/${featuredEvent.id}`}>
-            <img src={featuredEvent.image} alt="" /><div><p className="home-kicker">Featured this week</p><h2>{featuredEvent.title}</h2><p>{featuredEvent.city} · {featuredEvent.venue} · {featuredEvent.price}</p></div>
+            <img src={featuredEvent.image} alt="" /><div><p className="home-kicker">Featured this week</p><h2>{featuredEvent.title}</h2><p>{featuredEvent.city} · {featuredEvent.venue} · {formatPrice(featuredEvent.price)}</p></div>
           </Link>
         )}
         {!loading && !error && <div className="event-grid">
           {filteredEvents.map((event) => <Link className="event-card" href={`/event/${event.id}`} key={event.id}>
-            <img src={event.image} alt="" /><div className="event-card-body"><p className="event-date">{event.date} · {event.time}</p><h3>{event.title}</h3><p>{event.venue}, {event.city}</p><strong>${event.price}</strong></div>
+            <img src={event.image} alt="" /><div className="event-card-body"><p className="event-date">{event.date} · {event.time}</p><h3>{event.title}</h3><p>{event.venue}, {event.city}</p><strong>{formatPrice(event.price)}</strong></div>
           </Link>)}
         </div>}
       </section>
