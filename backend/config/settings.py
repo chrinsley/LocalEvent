@@ -83,11 +83,24 @@ TEMPLATES = [{
 WSGI_APPLICATION = 'config.wsgi.application'
 ASGI_APPLICATION = 'config.asgi.application'
 
-if os.environ.get('REDIS_URL'):
+redis_url = os.environ.get('REDIS_URL', '').strip()
+
+if redis_url:
     CHANNEL_LAYERS = {
         'default': {
             'BACKEND': 'channels_redis.core.RedisChannelLayer',
-            'CONFIG': {'hosts': [os.environ['REDIS_URL']]},
+            'CONFIG': {
+                'hosts': [{
+                    'address': redis_url,
+                    'socket_connect_timeout': float(
+                        os.environ.get('REDIS_CONNECT_TIMEOUT', '5')
+                    ),
+                    'socket_timeout': float(
+                        os.environ.get('REDIS_SOCKET_TIMEOUT', '5')
+                    ),
+                    'health_check_interval': 30,
+                }],
+            },
         }
     }
 else:
