@@ -13,3 +13,5 @@ requests>=2.0
 pillow>=10.0
 pydantic>=2.0
 python-dotenv
+boto3
+django-storages
