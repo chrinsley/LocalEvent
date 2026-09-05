@@ -23,6 +23,7 @@ function parseIncomingMessage(payload: string) {
 
 const Chat = () => {
   const [message, setMessage] = useState('')
+  const [isConnected, setIsConnected] = useState(false)
   const [messages, setMessages] = useState<ChatMessageItem[]>([
     {
       id: 'welcome-1',
@@ -42,13 +43,24 @@ const Chat = () => {
   const lastSentMessageRef = useRef<string | null>(null)
 
   useEffect(() => {
-    const socket = new WebSocket(
-      process.env.NEXT_PUBLIC_WS_URL || 'ws://127.0.0.1:8000/ws/chat/15/'
-    )
+    const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://127.0.0.1:8000/api/'
+    const websocketUrl = process.env.NEXT_PUBLIC_WS_URL ||
+      `${apiUrl.replace(/^http/, 'ws').replace(/api\/$/, '')}ws/chat/15/`
+    const socket = new WebSocket(websocketUrl)
     socketRef.current = socket
 
     socket.onopen = () => {
+      setIsConnected(true)
       console.log('Connected to server')
+    }
+
+    socket.onerror = () => {
+      setIsConnected(false)
+      console.error('Could not connect to live chat')
+    }
+
+    socket.onclose = () => {
+      setIsConnected(false)
     }
 
     socket.onmessage = (event) => {
@@ -70,13 +82,14 @@ const Chat = () => {
     }
 
     return () => {
+      setIsConnected(false)
       socket.close()
     }
   }, [])
 
   const sendMessage = () => {
     const trimmedMessage = message.trim()
-    if (!trimmedMessage || !socketRef.current) return
+    if (!trimmedMessage || socketRef.current?.readyState !== WebSocket.OPEN) return
 
     lastSentMessageRef.current = trimmedMessage
     socketRef.current.send(trimmedMessage)
@@ -106,7 +119,7 @@ const Chat = () => {
 
           <span className="chat-status">
             <span className="chat-status-dot" aria-hidden="true" />
-            Online
+            {isConnected ? 'Online' : 'Connecting...'}
           </span>
         </header>
 
@@ -132,7 +145,7 @@ const Chat = () => {
             onKeyDown={handleKeyDown}
           />
 
-          <button type="button" className="chat-send" onClick={sendMessage}>
+          <button type="button" className="chat-send" onClick={sendMessage} disabled={!isConnected}>
             Send
           </button>
         </div>
