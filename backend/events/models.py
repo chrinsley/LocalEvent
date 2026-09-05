@@ -5,7 +5,7 @@ from django.contrib.auth import get_user_model
 User = get_user_model()
 
 class Category(models.Model):
-    id = models.CharField(max_length=20, primary_key=True)
+    
     label = models.CharField(max_length=100)
     description = models.TextField()
     icon = models.CharField(max_length=10)
