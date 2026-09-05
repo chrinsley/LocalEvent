@@ -3,9 +3,9 @@ import { instance } from '@/api/api'
 import Link from 'next/link'
 import React, { useEffect, useState } from 'react'
 
-type Category = { id: string; label: string; description: string; icon: string }
+type Category = { id: number; label: string; description: string; icon: string }
 type Event = {
-  id: string; title: string; description: string; category: string; date: string
+  id: string; title: string; description: string; category: number; date: string
   time: string; venue: string; city: string; image: string; price: string; featured: boolean
 }
 
@@ -13,7 +13,7 @@ function HomePage() {
   const [categories, setCategories] = useState<Category[]>([])
   const [events, setEvents] = useState<Event[]>([])
   const [search, setSearch] = useState('')
-  const [selectedCategory, setSelectedCategory] = useState('all')
+  const [selectedCategory, setSelectedCategory] = useState<number | 'all'>('all')
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState('')
   useEffect(() => {
