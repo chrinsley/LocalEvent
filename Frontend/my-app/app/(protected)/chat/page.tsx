@@ -21,6 +21,9 @@ function parseIncomingMessage(payload: string) {
   }
 }
 
+const MAX_RECONNECT_DELAY_MS = 15000
+const BASE_RECONNECT_DELAY_MS = 1000
+
 const Chat = () => {
   const [message, setMessage] = useState('')
   const [isConnected, setIsConnected] = useState(false)
@@ -37,54 +40,83 @@ const Chat = () => {
     },
   ])
 
-  
-
   const socketRef = useRef<WebSocket | null>(null)
   const lastSentMessageRef = useRef<string | null>(null)
+  const reconnectAttemptsRef = useRef(0)
+  const reconnectTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null)
+  const isUnmountedRef = useRef(false)
 
   useEffect(() => {
+    isUnmountedRef.current = false
+
     const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://127.0.0.1:8000/api/'
     const websocketUrl = process.env.NEXT_PUBLIC_WS_URL ||
       `${apiUrl.replace(/^http/, 'ws').replace(/api\/$/, '')}ws/chat/15/`
-    const socket = new WebSocket(websocketUrl)
-    socketRef.current = socket
 
-    socket.onopen = () => {
-      setIsConnected(true)
-      console.log('Connected to server')
-    }
+    const connect = () => {
+      if (isUnmountedRef.current) return
 
-    socket.onerror = () => {
-      setIsConnected(false)
-      console.error('Could not connect to live chat')
-    }
+      const socket = new WebSocket(websocketUrl)
+      socketRef.current = socket
 
-    socket.onclose = () => {
-      setIsConnected(false)
-    }
-
-    socket.onmessage = (event) => {
-      console.log('[onmessage] raw:', event.data) 
-      const incomingMessage = parseIncomingMessage(event.data)
-      const isMyMessage = incomingMessage === lastSentMessageRef.current
-
-      if (isMyMessage) {
-        lastSentMessageRef.current = null
+      socket.onopen = () => {
+        setIsConnected(true)
+        reconnectAttemptsRef.current = 0
+        console.log('Connected to server')
       }
 
-      setMessages((previous) => [
-        ...previous,
-        {
-          id: `${Date.now()}-${Math.random()}`,
-          text: incomingMessage,
-          sender: isMyMessage ? 'user' : 'other',
-        },
-      ])
+      socket.onerror = () => {
+        console.error('Could not connect to live chat')
+      }
+
+      socket.onclose = () => {
+        setIsConnected(false)
+
+        if (isUnmountedRef.current) return
+
+        // Exponential backoff, capped, so a dead backend doesn't get
+        // hammered with reconnect attempts.
+        const attempt = reconnectAttemptsRef.current
+        const delay = Math.min(
+          BASE_RECONNECT_DELAY_MS * 2 ** attempt,
+          MAX_RECONNECT_DELAY_MS
+        )
+        reconnectAttemptsRef.current = attempt + 1
+
+        reconnectTimeoutRef.current = setTimeout(connect, delay)
+      }
+
+      socket.onmessage = (event) => {
+        console.log('[onmessage] raw:', event.data)
+        const incomingMessage = parseIncomingMessage(event.data)
+        const isMyMessage = incomingMessage === lastSentMessageRef.current
+
+        if (isMyMessage) {
+          lastSentMessageRef.current = null
+        }
+
+        setMessages((previous) => [
+          ...previous,
+          {
+            id: `${Date.now()}-${Math.random()}`,
+            text: incomingMessage,
+            sender: isMyMessage ? 'user' : 'other',
+          },
+        ])
+      }
     }
 
+    connect()
+
     return () => {
+      isUnmountedRef.current = true
+
+      if (reconnectTimeoutRef.current) {
+        clearTimeout(reconnectTimeoutRef.current)
+      }
+
       setIsConnected(false)
-      socket.close()
+      socketRef.current?.close()
     }
   }, [])
 
@@ -151,10 +183,9 @@ const Chat = () => {
           </button>
         </div>
       </div>
-      
+
     </main>
   )
 }
 
 export default Chat
-
