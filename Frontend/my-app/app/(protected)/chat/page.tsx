@@ -16,6 +16,7 @@ function parseIncomingMessage(payload: string) {
       return String(data.message ?? JSON.stringify(data))
     }
     return JSON.stringify(data)
+
   } catch {
     return payload
   }
@@ -69,7 +70,8 @@ const Chat = () => {
         console.error('Could not connect to live chat')
       }
 
-      socket.onclose = () => {
+      socket.onclose = (event) => {
+        console.log('[onclose]', event.code, event.reason)   
         setIsConnected(false)
 
         if (isUnmountedRef.current) return
