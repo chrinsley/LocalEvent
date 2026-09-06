@@ -16,7 +16,6 @@ function parseIncomingMessage(payload: string) {
       return String(data.message ?? JSON.stringify(data))
     }
     return JSON.stringify(data)
-
   } catch {
     return payload
   }
@@ -45,6 +44,7 @@ const Chat = () => {
   const lastSentMessageRef = useRef<string | null>(null)
   const reconnectAttemptsRef = useRef(0)
   const reconnectTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null)
+  const heartbeatIntervalRef = useRef<ReturnType<typeof setInterval> | null>(null)
   const isUnmountedRef = useRef(false)
 
   useEffect(() => {
@@ -64,6 +64,15 @@ const Chat = () => {
         setIsConnected(true)
         reconnectAttemptsRef.current = 0
         console.log('Connected to server')
+
+        // Keep the connection warm so proxies/load balancers between
+        // client and server don't treat it as idle and silently kill it
+        // (this is what a WebSocket 1006 close usually means).
+        heartbeatIntervalRef.current = setInterval(() => {
+          if (socket.readyState === WebSocket.OPEN) {
+            socket.send(JSON.stringify({ type: 'ping' }))
+          }
+        }, 25000)
       }
 
       socket.onerror = () => {
@@ -71,8 +80,13 @@ const Chat = () => {
       }
 
       socket.onclose = (event) => {
-        console.log('[onclose]', event.code, event.reason)   
+        console.log('[onclose]', event.code, event.reason)
         setIsConnected(false)
+
+        if (heartbeatIntervalRef.current) {
+          clearInterval(heartbeatIntervalRef.current)
+          heartbeatIntervalRef.current = null
+        }
 
         if (isUnmountedRef.current) return
 
@@ -115,6 +129,10 @@ const Chat = () => {
 
       if (reconnectTimeoutRef.current) {
         clearTimeout(reconnectTimeoutRef.current)
+      }
+
+      if (heartbeatIntervalRef.current) {
+        clearInterval(heartbeatIntervalRef.current)
       }
 
       setIsConnected(false)
