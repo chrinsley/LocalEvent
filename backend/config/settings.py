@@ -84,25 +84,22 @@ WSGI_APPLICATION = 'config.wsgi.application'
 ASGI_APPLICATION = 'config.asgi.application'
 
 redis_url = os.environ.get('REDIS_URL', '').strip()
+print(f"Redis URL: {redis_url}")  # Debugging line to check the value of redis_url
 
 if redis_url:
     CHANNEL_LAYERS = {
-        'default': {
-            'BACKEND': 'channels_redis.core.RedisChannelLayer',
-            'CONFIG': {
-                'hosts': [{
-                    'address': redis_url,
-                    'socket_connect_timeout': float(
-                        os.environ.get('REDIS_CONNECT_TIMEOUT', '5')
-                    ),
-                    'socket_timeout': float(
-                        os.environ.get('REDIS_SOCKET_TIMEOUT', '5')
-                    ),
-                    'health_check_interval': 30,
-                }],
-            },
-        }
-    }
+    "default": {
+        "BACKEND": "channels_redis.core.RedisChannelLayer",
+        "CONFIG": {
+            "hosts": [
+                {
+                    "address": os.environ["REDIS_URL"],
+                    "protocol": 2,  # force RESP2 on the wire
+                }
+            ],
+        },
+    },
+}
 else:
     CHANNEL_LAYERS = {
         'default': {'BACKEND': 'channels.layers.InMemoryChannelLayer'}
