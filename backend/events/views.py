@@ -1,4 +1,3 @@
-
 from django.db.models import Q
 from pydantic import Json
 from rest_framework import viewsets

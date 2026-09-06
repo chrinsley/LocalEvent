@@ -64,6 +64,7 @@ const Chat = () => {
     }
 
     socket.onmessage = (event) => {
+      console.log('[onmessage] raw:', event.data) 
       const incomingMessage = parseIncomingMessage(event.data)
       const isMyMessage = incomingMessage === lastSentMessageRef.current
 
