@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useRef, useState } from 'react'
 import useWebSocket, { ReadyState } from 'react-use-websocket'
 
 import '../../../css/Chat.css'
@@ -17,6 +17,7 @@ const WS_URL =
 
 const Chat = () => {
   const [message, setMessage] = useState('')
+  const lastSentMessage = useRef<string | null>(null)
 
   const [messages, setMessages] = useState<ChatMessageItem[]>([
     {
@@ -39,8 +40,12 @@ const Chat = () => {
  
 
  
-  const { sendMessage, lastMessage, readyState } = useWebSocket(
-  WS_URL,
+  const websocketUrl = accessToken
+    ? `${WS_URL}?token=${encodeURIComponent(accessToken)}`
+    : WS_URL
+
+  const { sendMessage, readyState } = useWebSocket(
+    websocketUrl,
   {
     retryOnError: true,
 
@@ -67,6 +72,36 @@ const Chat = () => {
         event
       )
     },
+
+    onMessage: (event) => {
+      let incomingMessage = event.data
+
+      try {
+        const payload = JSON.parse(event.data)
+        incomingMessage =
+          payload && typeof payload === 'object' && 'message' in payload
+            ? String(payload.message ?? '')
+            : String(payload)
+      } catch {
+        // The consumer may send plain text or JSON.
+      }
+
+      if (!incomingMessage) {
+        return
+      }
+
+      const isOwnMessage = incomingMessage === lastSentMessage.current
+      lastSentMessage.current = null
+
+      setMessages((previous) => [
+        ...previous,
+        {
+          id: `${Date.now()}-${Math.random()}`,
+          text: incomingMessage,
+          sender: isOwnMessage ? 'user' : 'other',
+        },
+      ])
+    },
   }
 )
 
@@ -79,6 +114,7 @@ const Chat = () => {
       return
     }
 
+    lastSentMessage.current = trimmedMessage
     sendMessage(trimmedMessage)
     setMessage('')
   }
