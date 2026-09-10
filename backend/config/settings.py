@@ -17,15 +17,22 @@ if not DEBUG and SECRET_KEY == 'dev-only-change-me':
 
 
 def env_list(name, default=''):
-    return [value.strip() for value in os.environ.get(name, default).split(',') if value.strip()]
+    return [
+        value.strip().rstrip('/')
+        for value in os.environ.get(name, default).split(',')
+        if value.strip()
+    ]
 
 
 ALLOWED_HOSTS = env_list('DJANGO_ALLOWED_HOSTS', 'localhost,127.0.0.1')
 CORS_ALLOWED_ORIGINS = env_list(
     'CORS_ALLOWED_ORIGINS',
-    'http://localhost:3000,http://localhost:5173,http://127.0.0.1:5173',
+    'http://localhost:3000,http://localhost:5173,http://127.0.0.1:5173,https://local-event-six.vercel.app',
 )
-CSRF_TRUSTED_ORIGINS = env_list('CSRF_TRUSTED_ORIGINS')
+CSRF_TRUSTED_ORIGINS = env_list(
+    'CSRF_TRUSTED_ORIGINS',
+    'https://local-event-six.vercel.app',
+)
 
 INSTALLED_APPS = [
     'daphne',
