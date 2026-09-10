@@ -83,11 +83,27 @@ TEMPLATES = [{
 WSGI_APPLICATION = 'config.wsgi.application'
 ASGI_APPLICATION = 'config.asgi.application'
 
-CHANNEL_LAYERS = {
+redis_url = os.environ.get('REDIS_URL', '').strip()
+print(f"Redis URL: {redis_url}")  # Debugging line to check the value of redis_url
+
+if redis_url:
+    CHANNEL_LAYERS = {
     "default": {
-        "BACKEND": "channels.layers.InMemoryChannelLayer",
+        "BACKEND": "channels_redis.core.RedisChannelLayer",
+        "CONFIG": {
+            "hosts": [
+                {
+                    "address": os.environ["REDIS_URL"],
+                    "protocol": 2,  # force RESP2 on the wire
+                }
+            ],
+        },
     },
 }
+else:
+    CHANNEL_LAYERS = {
+        'default': {'BACKEND': 'channels.layers.InMemoryChannelLayer'}
+    }
 
 if os.environ.get('DATABASE_URL'):
     import dj_database_url
