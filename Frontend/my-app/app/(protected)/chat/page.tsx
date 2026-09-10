@@ -36,35 +36,39 @@ const Chat = () => {
       ? localStorage.getItem('token')
       : null
 
-  console.log('Access token:', accessToken)
+ 
 
-  const websocketUrl = accessToken
-    ? `${WS_URL}?token=${encodeURIComponent(accessToken)}`
-    : WS_URL
-
+ 
   const { sendMessage, lastMessage, readyState } = useWebSocket(
-    websocketUrl,
-    {
-      retryOnError: true,
+  WS_URL,
+  {
+    retryOnError: true,
 
-      reconnectAttempts: Infinity,
+    reconnectAttempts: Infinity,
 
-      reconnectInterval: (attemptNumber) =>
-        Math.min(1000 * 2 ** attemptNumber, 15000),
+    reconnectInterval: (attemptNumber) =>
+      Math.min(1000 * 2 ** attemptNumber, 15000),
 
-      onOpen: () => {
-        console.log('Connected to server')
-      },
+    onOpen: () => {
+      console.log('Connected to server')
+    },
 
-      onClose: (event) => {
-        console.log('[WebSocket closed]', event.code, event.reason)
-      },
+    onClose: (event) => {
+      console.log(
+        '[WebSocket closed]',
+        event.code,
+        event.reason
+      )
+    },
 
-      onError: (event) => {
-        console.error('Could not connect to live chat', event)
-      },
-    }
-  )
+    onError: (event) => {
+      console.error(
+        'Could not connect to live chat',
+        event
+      )
+    },
+  }
+)
 
   const isConnected = readyState === ReadyState.OPEN
 

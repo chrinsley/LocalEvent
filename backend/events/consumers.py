@@ -5,22 +5,11 @@ import json
 class ChatConsumer(AsyncWebsocketConsumer):
 
     async def connect(self):
-        user = self.scope.get("user")
-        print(user)
-
-        print("WebSocket user:", user)
-        print("Authenticated:", user.is_authenticated)
+       
 
         self.room_name = self.scope["url_route"]["kwargs"]["room_id"]
         self.room_group_name = f"chat_{self.room_name}"
 
-        if not user or not user.is_authenticated:
-            print("WebSocket authentication failed")
-
-            await self.close()
-            return
-
-        print("WebSocket authentication successful")
 
         await self.accept()
 
