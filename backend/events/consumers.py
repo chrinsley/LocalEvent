@@ -5,8 +5,8 @@ import json
 class ChatConsumer(AsyncWebsocketConsumer):
 
     async def connect(self):
-
         user = self.scope.get("user")
+        print(user)
 
         print("WebSocket user:", user)
         print("Authenticated:", user.is_authenticated)
