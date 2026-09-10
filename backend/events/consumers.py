@@ -2,31 +2,30 @@ from channels.generic.websocket import AsyncWebsocketConsumer
 from django.conf import settings
 import json
 
+from channels.generic.websocket import AsyncWebsocketConsumer
+import json
+
 
 class ChatConsumer(AsyncWebsocketConsumer):
 
     async def connect(self):
         user = self.scope.get("user")
+
         self.room_name = self.scope["url_route"]["kwargs"]["room_id"]
+        self.room_group_name = f"chat_{self.room_name}"
 
+        if not user or not user.is_authenticated:
+            await self.close()
+            return
 
-        
-        if user.is_authenticated:
-            self.room_group_name = f"chat_{self.room_name}"
+        await self.accept()
 
-            await self.channel_layer.group_add(
-                self.room_group_name,
-                self.channel_name
-            )
-
-        else:
-            self.close()
-
-            
-
+        await self.channel_layer.group_add(
+            self.room_group_name,
+            self.channel_name
+        )
 
     async def receive(self, text_data):
-
         await self.channel_layer.group_send(
             self.room_group_name,
             {
@@ -37,19 +36,16 @@ class ChatConsumer(AsyncWebsocketConsumer):
             }
         )
 
-
     async def chat_message(self, event):
-
         await self.send(
             text_data=json.dumps({
                 "message": event["message"],
             })
         )
 
-
     async def disconnect(self, close_code):
-
-        await self.channel_layer.group_discard(
-            self.room_group_name,
-            self.channel_name
-        )
+        if hasattr(self, "room_group_name"):
+            await self.channel_layer.group_discard(
+                self.room_group_name,
+                self.channel_name
+            )
