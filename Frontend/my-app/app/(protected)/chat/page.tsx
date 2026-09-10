@@ -33,16 +33,16 @@ const Chat = () => {
 
   const accessToken =
     typeof window !== 'undefined'
-      ? localStorage.getItem('access_token')
+      ? localStorage.getItem('token')
       : null
 
-  const { sendMessage, lastMessage, readyState } = useWebSocket(
-    WS_URL,
-    {
-      protocols: accessToken
-        ? ['authorization', accessToken]
-        : undefined,
+  const websocketUrl = accessToken
+    ? `${WS_URL}?token=${encodeURIComponent(accessToken)}`
+    : WS_URL
 
+  const { sendMessage, lastMessage, readyState } = useWebSocket(
+    websocketUrl,
+    {
       retryOnError: true,
 
       reconnectAttempts: Infinity,
