@@ -1,5 +1,8 @@
 'use client'
-import { useEffect, useRef, useState } from 'react'
+
+import { useState } from 'react'
+import useWebSocket, { ReadyState } from 'react-use-websocket'
+
 import '../../../css/Chat.css'
 
 type ChatMessageItem = {
@@ -8,25 +11,13 @@ type ChatMessageItem = {
   sender: 'user' | 'other'
 }
 
-function parseIncomingMessage(payload: string) {
-  try {
-    const data = JSON.parse(payload)
-    if (typeof data === 'string') return data
-    if (data && typeof data === 'object' && 'message' in data) {
-      return String(data.message ?? JSON.stringify(data))
-    }
-    return JSON.stringify(data)
-  } catch {
-    return payload
-  }
-}
-
-const MAX_RECONNECT_DELAY_MS = 15000
-const BASE_RECONNECT_DELAY_MS = 1000
+const WS_URL =
+  process.env.NEXT_PUBLIC_WS_URL ||
+  'ws://127.0.0.1:8000/ws/chat/15/'
 
 const Chat = () => {
   const [message, setMessage] = useState('')
-  const [isConnected, setIsConnected] = useState(false)
+
   const [messages, setMessages] = useState<ChatMessageItem[]>([
     {
       id: 'welcome-1',
@@ -40,170 +31,139 @@ const Chat = () => {
     },
   ])
 
-  const socketRef = useRef<WebSocket | null>(null)
-  const lastSentMessageRef = useRef<string | null>(null)
-  const reconnectAttemptsRef = useRef(0)
-  const reconnectTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null)
-  const heartbeatIntervalRef = useRef<ReturnType<typeof setInterval> | null>(null)
-  const isUnmountedRef = useRef(false)
+  const accessToken =
+    typeof window !== 'undefined'
+      ? localStorage.getItem('access_token')
+      : null
 
-  useEffect(() => {
-    isUnmountedRef.current = false
+  const { sendMessage, lastMessage, readyState } = useWebSocket(
+    WS_URL,
+    {
+      protocols: accessToken
+        ? ['authorization', accessToken]
+        : undefined,
 
-    const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://127.0.0.1:8000/api/'
-    const websocketUrl = process.env.NEXT_PUBLIC_WS_URL ||
-      `${apiUrl.replace(/^http/, 'ws').replace(/api\/$/, '')}ws/chat/15/`
+      retryOnError: true,
 
-    const connect = () => {
-      if (isUnmountedRef.current) return
+      reconnectAttempts: Infinity,
 
-      const socket = new WebSocket(websocketUrl)
-      socketRef.current = socket
+      reconnectInterval: (attemptNumber) =>
+        Math.min(1000 * 2 ** attemptNumber, 15000),
 
-      socket.onopen = () => {
-        setIsConnected(true)
-        reconnectAttemptsRef.current = 0
+      onOpen: () => {
         console.log('Connected to server')
+      },
 
-        // Keep the connection warm so proxies/load balancers between
-        // client and server don't treat it as idle and silently kill it
-        // (this is what a WebSocket 1006 close usually means).
-        heartbeatIntervalRef.current = setInterval(() => {
-          if (socket.readyState === WebSocket.OPEN) {
-            socket.send(JSON.stringify({ type: 'ping' }))
-          }
-        }, 25000)
-      }
+      onClose: (event) => {
+        console.log('[WebSocket closed]', event.code, event.reason)
+      },
 
-      socket.onerror = () => {
-        console.error('Could not connect to live chat')
-      }
-
-      socket.onclose = (event) => {
-        console.log('[onclose]', event.code, event.reason)
-        setIsConnected(false)
-
-        if (heartbeatIntervalRef.current) {
-          clearInterval(heartbeatIntervalRef.current)
-          heartbeatIntervalRef.current = null
-        }
-
-        if (isUnmountedRef.current) return
-
-        // Exponential backoff, capped, so a dead backend doesn't get
-        // hammered with reconnect attempts.
-        const attempt = reconnectAttemptsRef.current
-        const delay = Math.min(
-          BASE_RECONNECT_DELAY_MS * 2 ** attempt,
-          MAX_RECONNECT_DELAY_MS
-        )
-        reconnectAttemptsRef.current = attempt + 1
-
-        reconnectTimeoutRef.current = setTimeout(connect, delay)
-      }
-
-      socket.onmessage = (event) => {
-        console.log('[onmessage] raw:', event.data)
-        const incomingMessage = parseIncomingMessage(event.data)
-        const isMyMessage = incomingMessage === lastSentMessageRef.current
-
-        if (isMyMessage) {
-          lastSentMessageRef.current = null
-        }
-
-        setMessages((previous) => [
-          ...previous,
-          {
-            id: `${Date.now()}-${Math.random()}`,
-            text: incomingMessage,
-            sender: isMyMessage ? 'user' : 'other',
-          },
-        ])
-      }
+      onError: (event) => {
+        console.error('Could not connect to live chat', event)
+      },
     }
+  )
 
-    connect()
+  const isConnected = readyState === ReadyState.OPEN
 
-    return () => {
-      isUnmountedRef.current = true
-
-      if (reconnectTimeoutRef.current) {
-        clearTimeout(reconnectTimeoutRef.current)
-      }
-
-      if (heartbeatIntervalRef.current) {
-        clearInterval(heartbeatIntervalRef.current)
-      }
-
-      setIsConnected(false)
-      socketRef.current?.close()
-    }
-  }, [])
-
-  const sendMessage = () => {
+  const sendChatMessage = () => {
     const trimmedMessage = message.trim()
-    if (!trimmedMessage || socketRef.current?.readyState !== WebSocket.OPEN) return
 
-    lastSentMessageRef.current = trimmedMessage
-    socketRef.current.send(trimmedMessage)
-    setMessage('')
-  }
-
-  const handleKeyDown = (event: React.KeyboardEvent<HTMLTextAreaElement>) => {
-    if (event.key === 'Enter' && !event.shiftKey) {
-      event.preventDefault()
-      sendMessage()
+    if (!trimmedMessage || !isConnected) {
+      return
     }
+
+    sendMessage(trimmedMessage)
+    setMessage('')
   }
 
   return (
     <main className="chat-page">
       <div className="chat-shell">
+
         <header className="chat-header">
+
           <div className="chat-header__group">
+
             <div className="chat-avatar" aria-hidden="true">
               AI
             </div>
+
             <div>
-              <h1 className="chat-title">Event Concierge</h1>
-              <p className="chat-subtitle">Community chat</p>
+              <h1 className="chat-title">
+                Event Concierge
+              </h1>
+
+              <p className="chat-subtitle">
+                Community chat
+              </p>
             </div>
+
           </div>
 
           <span className="chat-status">
-            <span className="chat-status-dot" aria-hidden="true" />
+            <span
+              className="chat-status-dot"
+              aria-hidden="true"
+            />
+
             {isConnected ? 'Online' : 'Connecting...'}
           </span>
+
         </header>
 
-        <section className="chat-thread" aria-live="polite">
+        <section
+          className="chat-thread"
+          aria-live="polite"
+        >
+
           {messages.map((item) => (
             <div
               key={item.id}
               className={`chat-message ${
-                item.sender === 'user' ? 'chat-message--outgoing' : 'chat-message--incoming'
+                item.sender === 'user'
+                  ? 'chat-message--outgoing'
+                  : 'chat-message--incoming'
               }`}
             >
               {item.text}
             </div>
           ))}
+
         </section>
 
         <div className="chat-composer">
+
           <textarea
             value={message}
-            onChange={(event) => setMessage(event.target.value)}
+            onChange={(event) =>
+              setMessage(event.target.value)
+            }
             placeholder="Type your message..."
             rows={1}
-            onKeyDown={handleKeyDown}
+            onKeyDown={(event) => {
+              if (
+                event.key === 'Enter' &&
+                !event.shiftKey
+              ) {
+                event.preventDefault()
+                sendChatMessage()
+              }
+            }}
           />
 
-          <button type="button" className="chat-send" onClick={sendMessage} disabled={!isConnected}>
+          <button
+            type="button"
+            className="chat-send"
+            onClick={sendChatMessage}
+            disabled={!isConnected}
+          >
             Send
           </button>
-        </div>
-      </div>
 
+        </div>
+
+      </div>
     </main>
   )
 }
