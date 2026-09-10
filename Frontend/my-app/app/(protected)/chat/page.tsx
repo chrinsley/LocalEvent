@@ -36,6 +36,8 @@ const Chat = () => {
       ? localStorage.getItem('token')
       : null
 
+  console.log('Access token:', accessToken)
+
   const websocketUrl = accessToken
     ? `${WS_URL}?token=${encodeURIComponent(accessToken)}`
     : WS_URL
