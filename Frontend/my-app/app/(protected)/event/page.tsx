@@ -118,12 +118,12 @@ function EventPage() {
               >
 
                 {/* Image */}
-                <div className="event-card-image-frame">
+                <div className="relative h-56 overflow-hidden">
 
                   <img
                     src={event.image}
                     alt={event.title}
-                    className="event-card-image group-hover:scale-105 transition-transform duration-500"
+                    className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
                   />
 
                   {/* Featured badge */}

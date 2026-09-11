@@ -48,7 +48,7 @@ export default function CategoryPage() {
         <section className="category-results" aria-labelledby="category-results-title">
           <div className="section-heading"><h2 id="category-results-title">{selectedCategory === 'all' ? 'All upcoming events' : categories.find((category) => category.id === selectedCategory)?.label}</h2><span className="category-results__count">{filteredEvents.length} events</span></div>
           {filteredEvents.length === 0 ? <p className="home-message">No events in this category yet.</p> : <div className="event-grid">
-            {filteredEvents.map((event) => <Link className="event-card" href={`/event/${event.id}`} key={event.id}><img className="event-card-image" src={event.image} alt={event.title} /><div className="event-card-body"><p className="event-date">{event.date} · {event.time}</p><h3>{event.title}</h3><p>{event.venue}, {event.city}</p><strong>{formatPrice(event.price)}</strong></div></Link>)}
+            {filteredEvents.map((event) => <Link className="event-card" href={`/event/${event.id}`} key={event.id}><img src={event.image} alt={event.title} /><div className="event-card-body"><p className="event-date">{event.date} · {event.time}</p><h3>{event.title}</h3><p>{event.venue}, {event.city}</p><strong>{formatPrice(event.price)}</strong></div></Link>)}
           </div>}
         </section>
       </>}

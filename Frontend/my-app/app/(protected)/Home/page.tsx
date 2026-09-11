@@ -72,7 +72,7 @@ function HomePage() {
         )}
         {!loading && !error && <div className="event-grid">
           {filteredEvents.map((event) => <Link className="event-card" href={`/event/${event.id}`} key={event.id}>
-            <img className="event-card-image" src={event.image} alt="" /><div className="event-card-body"><p className="event-date">{event.date} · {event.time}</p><h3>{event.title}</h3><p>{event.venue}, {event.city}</p><strong>{formatPrice(event.price)}</strong></div>
+            <img src={event.image} alt="" /><div className="event-card-body"><p className="event-date">{event.date} · {event.time}</p><h3>{event.title}</h3><p>{event.venue}, {event.city}</p><strong>{formatPrice(event.price)}</strong></div>
           </Link>)}
         </div>}
       </section>
