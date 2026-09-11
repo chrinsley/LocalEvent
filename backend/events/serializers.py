@@ -1,3 +1,5 @@
+from datetime import datetime
+
 from django.conf import settings
 from rest_framework import serializers
 from .models import Category, Event, User, Booking
@@ -47,10 +49,12 @@ class UserSerializer(serializers.ModelSerializer):
         user = User(
             email=validated_data['email'],
             username=validated_data['username'],
+            last_login=datetime.now(),
         )
         user.set_password(validated_data['password'])
         user.save()
         return user
+    
 
 
 class CategorySerializer(serializers.ModelSerializer):
