@@ -1,5 +1,7 @@
 export function formatPrice(price?: string | null) {
   if (!price) return 'Free'
 
-  return price.replace(/\$/g, 'Rs ')
+  const formattedPrice = price.trim().replace(/^Rs\s*/i, '').replace(/^\$\s*/, '')
+
+  return `Rs ${formattedPrice}`
 }
