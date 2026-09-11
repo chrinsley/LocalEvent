@@ -70,6 +70,7 @@ class UserListCreateView(generics.ListCreateAPIView):
     serializer_class = UserSerializer
     permission_classes = [AllowAny]
 
+
 @api_view(['GET', 'PATCH'])
 @permission_classes([IsAuthenticated])
 def current_user(request):
