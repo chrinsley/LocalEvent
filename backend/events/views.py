@@ -64,6 +64,8 @@ class EventViewSet(viewsets.ReadOnlyModelViewSet):
             )
         return qs
 
+    
+
 
 class UserListCreateView(generics.ListCreateAPIView):
     queryset = User.objects.filter(is_staff=False)
