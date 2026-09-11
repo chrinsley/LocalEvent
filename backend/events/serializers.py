@@ -67,6 +67,10 @@ class EventSerializer(serializers.ModelSerializer):
     )
     time = serializers.TimeField(format='%H:%M')
     image = serializers.SerializerMethodField()
+    event_attendees = serializers.SerializerMethodField()
+
+    def get_event_attendees(self, obj):
+        return obj.bookings.count()
 
     def get_image(self, obj):
         if not obj.image:
@@ -100,9 +104,9 @@ class EventSerializer(serializers.ModelSerializer):
             'venue',
             'city',
             'image',
-            'source',
+          
             'price',
-            'attendees',
+            'event_attendees',
             'featured',
         ]
 

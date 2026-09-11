@@ -19,12 +19,6 @@ class Category(models.Model):
 
 
 class Event(models.Model):
-    SOURCE_CHOICES = [
-        ('facebook', 'Facebook'),
-        ('whatsapp', 'WhatsApp'),
-        ('local', 'Local listing'),
-    ]
-
     title = models.CharField(max_length=200)
     description = models.TextField()
     category = models.ForeignKey(
@@ -35,7 +29,6 @@ class Event(models.Model):
     venue = models.CharField(max_length=200)
     city = models.CharField(max_length=100)
     image = models.ImageField(upload_to='upload_files/', blank=True, null=True)
-    source = models.CharField(max_length=20, choices=SOURCE_CHOICES)
     price = models.CharField(max_length=50)
     attendees = models.PositiveIntegerField(default=0)
     featured = models.BooleanField(default=False)
@@ -45,6 +38,8 @@ class Event(models.Model):
 
     def __str__(self):
         return self.title
+
+    
 
 class Booking(models.Model):
     user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='users')

@@ -14,5 +14,5 @@ class BookingAdmin(admin.ModelAdmin):
 @admin.register(Event)
 class EventAdmin(admin.ModelAdmin):
     list_display = ['title', 'category', 'date', 'city', 'featured']
-    list_filter = ['category', 'featured', 'source']
+    list_filter = ['category', 'featured',]
     search_fields = ['title', 'venue', 'city']
