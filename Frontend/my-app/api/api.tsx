@@ -50,7 +50,6 @@ const refreshAccessToken = async (): Promise<string> => {
         `${API}token/refresh/`,
         { refresh: refreshToken }
     )
-    console.log(response.data)
 
     localStorage.setItem('token', response.data.access)
     return response.data.access

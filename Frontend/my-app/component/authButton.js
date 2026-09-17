@@ -35,9 +35,6 @@ export default function GoogleButton() {
         size='large'
         width='339'
         shape='pill'
-        onError={() => {
-          console.log('Google login failed')
-        }}
       />
     </div>
   )

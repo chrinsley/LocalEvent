@@ -54,18 +54,6 @@ const Chat = () => {
     reconnectInterval: (attemptNumber) =>
       Math.min(1000 * 2 ** attemptNumber, 15000),
 
-    onOpen: () => {
-      console.log('Connected to server')
-    },
-
-    onClose: (event) => {
-      console.log(
-        '[WebSocket closed]',
-        event.code,
-        event.reason
-      )
-    },
-
     onError: (event) => {
       console.error(
         'Could not connect to live chat',

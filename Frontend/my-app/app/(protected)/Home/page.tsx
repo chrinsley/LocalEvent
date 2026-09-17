@@ -24,7 +24,6 @@ function HomePage() {
           instance.get<Category[]>('categories/'), instance.get<Event[]>('events/'),
         ])
         setCategories(categoryResponse.data)
-        console.log(categoryResponse.data)
         setEvents(eventResponse.data)
       } catch {
         setError('Could not load events. Please try again.')
